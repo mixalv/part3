@@ -1,7 +1,8 @@
+require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
-
+const Person = require('./models/person')
 
 
 const app = express()
@@ -39,12 +40,15 @@ let persons = [
 ]
 
 app.get('/api/persons', (request, response)=> {
-    response.json(persons)
+    Person.find({}).then(persons=>{
+        response.json(persons)
+    })
+    
 })
 
 app.get('/api/persons/:id', (request, response)=> {
     const id = Number(request.params.id)
-    const person = persons.find(person => person.id === id)
+    const person = await Person.findById(id)
     if (person) {
         response.json(person)
     } else {
@@ -69,10 +73,6 @@ app.get('/info', (request, response)=> {
 })
 
 app.post('/api/persons', (request, response)=> {
-    function getRandomInt(max) {
-        return Math.floor(Math.random() * max);
-      }
-    const id = getRandomInt(99999999999)
     if (!request.body.name || !request.body.number) {
         return response.status(400).json({
             error: 'name and number must be filled'
@@ -84,14 +84,14 @@ app.post('/api/persons', (request, response)=> {
             error: 'name must be unique'
         })
     }
-    const person = {
-        id: id,
+    const person = new Person({
         name: request.body.name,
         number: request.body.number
-        
-    }
-   persons = persons.concat(person)
-   response.json(person)
+    }) 
+   person.save(person).then(savedPerson=>{
+        response.json(savedPerson)
+   })
+   
 })
 
 const PORT = process.env.PORT || 3001
