@@ -72,26 +72,26 @@ app.get('/info', (request, response)=> {
 })
 
 app.post('/api/persons', (request, response)=> {
-    if (!request.body.name || !request.body.number) {
-        return response.status(400).json({
-            error: 'name and number must be filled'
-        })
-    }
-
-    if(persons.some(person => person.name.toLowerCase() === request.body.name.toLowerCase())) {
-        return response.status(400).json({
-            error: 'name must be unique'
-        })
-    }
-    const person = new Person({
-        name: request.body.name,
-        number: request.body.number
-    }) 
-   person.save(person).then(savedPerson=>{
-        response.json(savedPerson)
-   })
-   .catch(error => next(error))
-   
+    Person.find({}).then(persons=> {
+        if (!request.body.name || !request.body.number) {
+            return response.status(400).json({
+                error: 'name and number must be filled'
+            })
+        }
+        if(persons.some(person => person.name.toLowerCase() === request.body.name.toLowerCase())) {
+            return response.status(400).json({
+                error: 'name must be unique'
+            })
+        }
+        const person = new Person({
+            name: request.body.name,
+            number: request.body.number
+        }) 
+       person.save().then(savedPerson=>{
+            response.json(savedPerson)
+       })
+       .catch(error => next(error))
+    })
 })
 
 app.put('/api/persons/:id', (request, response, next)=> {
